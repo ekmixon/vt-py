@@ -27,8 +27,9 @@ from vt import Object
 def new_client(httpserver):
   return Client(
       'dummy_api_key',
-      host='http://' + httpserver.host + ':' + str(httpserver.port),
-      timeout=500)
+      host=f'http://{httpserver.host}:{str(httpserver.port)}',
+      timeout=500,
+  )
 
 
 def test_object_from_dict():
@@ -305,8 +306,7 @@ def test_download_file_with_error(httpserver):
 
 def test_scan_file(httpserver):
 
-  upload_url = (
-      'http://' + httpserver.host + ':' + str(httpserver.port) + '/upload')
+  upload_url = f'http://{httpserver.host}:{str(httpserver.port)}/upload'
 
   httpserver.expect_oneshot_request(
       '/api/v3/files/upload_url',

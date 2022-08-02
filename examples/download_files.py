@@ -67,20 +67,15 @@ def main():
   if not os.path.exists(args.output):
     os.makedirs(args.output)
 
-  if args.input:
-    input_file = open(args.input)
-  else:
-    input_file = sys.stdin
-
+  input_file = open(args.input) if args.input else sys.stdin
   loop = asyncio.get_event_loop()
   queue = asyncio.Queue(loop=loop)
   loop.create_task(read_hashes(queue, input_file))
 
-  _worker_tasks = []
-  for i in range(args.workers):
-    _worker_tasks.append(
-        loop.create_task(download_files(queue, args)))
-
+  _worker_tasks = [
+      loop.create_task(download_files(queue, args))
+      for _ in range(args.workers)
+  ]
   # Wait until all worker tasks has completed.
   loop.run_until_complete(asyncio.gather(*_worker_tasks))
   loop.close()

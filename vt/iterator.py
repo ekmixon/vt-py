@@ -145,7 +145,7 @@ class Iterator:
     """
     if not self._server_cursor or not self._count:
       return None
-    return self._server_cursor + '-' + str(self._batch_cursor)
+    return f'{self._server_cursor}-{str(self._batch_cursor)}'
 
   @property
   async def meta_async(self):

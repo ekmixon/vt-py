@@ -59,10 +59,7 @@ class RetroHuntJobToNetworkInfrastructureHandler:
     """
 
     async with vt.Client(self.apikey) as client:
-      url = ('/intelligence/retrohunt_jobs/{}/matching_files?'
-             'relationships=contacted_domains,contacted_ips,'
-             'contacted_urls').format(
-          retrohunt_job_id)
+      url = f'/intelligence/retrohunt_jobs/{retrohunt_job_id}/matching_files?relationships=contacted_domains,contacted_ips,contacted_urls'
       files = client.iterator(url, limit=max_files)
       async for f in files:
         await self.files_queue.put(f)
@@ -177,15 +174,14 @@ class RetroHuntJobToNetworkInfrastructureHandler:
             print(f'\t{network_inf[0]}')
             for address in network_inf[1]:
               if address['type'] in ('domain', 'ip_address'):
-                print('\t\t{}'.format(address['id']))
+                print(f"\t\t{address['id']}")
               else:
-                print('\t\t{}'.format(address['context_attributes']['url']))
+                print(f"\t\t{address['context_attributes']['url']}")
 
     print('\nCOMMONALITIES BETWEEN FILES')
     for key, commonality in self.files_commonalities.items():
-      comm_items = [(k, v) for k, v in commonality.items() if
-                    len(v) > self.MIN_IN_COMMON]
-      if comm_items:
+      if comm_items := [(k, v) for k, v in commonality.items()
+                        if len(v) > self.MIN_IN_COMMON]:
         print(f'{key}')
         for value_in_common, files_having_it_in_common in comm_items:
           value_in_common = str(value_in_common)

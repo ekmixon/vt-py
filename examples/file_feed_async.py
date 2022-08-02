@@ -68,7 +68,7 @@ class FeedReader:
         file_path = os.path.join(self._output_dir, file_obj.id)
         # Write a file <sha256>.json with file's metadata and another file
         # named <sha256> with the file's content.
-        with open(file_path + '.json', mode='w') as f:
+        with open(f'{file_path}.json', mode='w') as f:
           f.write(json.dumps(file_obj.to_dict()))
         if self._download_files:
           # The URL for downloading the file comes as a context attribute named
@@ -96,20 +96,17 @@ class FeedReader:
   def run(self):
 
     loop = asyncio.get_event_loop()
-    loop_tasks = []
     # Create a task that read file object's from the feed and put them in a
     # queue.
     self._enqueue_files_task = loop.create_task(
         self._get_from_feed_and_enqueue())
-    loop_tasks.append(self._enqueue_files_task)
-
+    loop_tasks = [self._enqueue_files_task]
     # Create multiple tasks that read file object's from the queue, download
     # the file's content, and create the output files.
-    self._worker_tasks = []
-    for i in range(self._num_workers):
-      self._worker_tasks.append(
-          loop.create_task(self._process_files_from_queue()))
-
+    self._worker_tasks = [
+        loop.create_task(self._process_files_from_queue())
+        for _ in range(self._num_workers)
+    ]
     # If the program is interrupted, abort it gracefully.
     signals = (signal.SIGINT,)
     for s in signals:

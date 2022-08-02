@@ -163,15 +163,11 @@ class Object:
 
   @property
   def context_attributes(self):
-    if hasattr(self, '_context_attributes'):
-      return self._context_attributes
-    return {}
+    return self._context_attributes if hasattr(self, '_context_attributes') else {}
 
   @property
   def relationships(self):
-    if hasattr(self, '_relationships'):
-      return self._relationships
-    return {}
+    return self._relationships if hasattr(self, '_relationships') else {}
 
   def get(self, attr_name, default=None):
     """Returns an attribute by name.
@@ -192,13 +188,12 @@ class Object:
     if self._id:
       result['id'] = self._id
 
-    attributes = {}
-    for name, value in self.__dict__.items():
-      if not name.startswith('_'):
-        if not modified_attributes_only or name in self._modified_attrs:
-          attributes[name] = value
-
-    if attributes:
+    if attributes := {
+        name: value
+        for name, value in self.__dict__.items()
+        if not name.startswith('_') and (
+            not modified_attributes_only or name in self._modified_attrs)
+    }:
       result['attributes'] = attributes
 
     if self.relationships:

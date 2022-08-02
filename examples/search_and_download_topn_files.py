@@ -134,10 +134,10 @@ async def main():
   files_path = handler.create_download_folder(storage_path)
   enqueue_files_task = loop.create_task(handler.queue_file_hashes(search))
 
-  download_tasks = []
-  for i in range(workers):
-    download_tasks.append(loop.create_task(handler.download_files(files_path)))
-
+  download_tasks = [
+      loop.create_task(handler.download_files(files_path))
+      for _ in range(workers)
+  ]
   await asyncio.gather(enqueue_files_task)
   # Wait until all the files have been queued and downloaded, then cancel
   # download tasks that are idle

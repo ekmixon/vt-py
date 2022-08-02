@@ -150,9 +150,7 @@ class Feed:
         await self._get_next_batch_async()
         self._skip(self._batch_skip)
         self._batch_skip = 0
-      next_item = self._batch.readline()
-
-      if next_item:
+      if next_item := self._batch.readline():
         self._count += 1
         self._batch_cursor += 1
         return Object.from_dict(json.loads(next_item.decode('utf-8')))

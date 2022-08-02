@@ -37,7 +37,7 @@ def iterate(data, path):
 
 def get_all(data, path):
   """Returns a list with all values in data matching the given JsonPath."""
-  return [x for x in iterate(data, path)]
+  return list(iterate(data, path))
 
 
 def get(data, path, default=None):

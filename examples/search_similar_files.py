@@ -115,21 +115,19 @@ async def main():
   print('Files having same imphash or rich PE header hash:')
   for hash_type, hash_val in [
         ('imphash', imphash), ('rich_pe_header_hash', rich)]:
-    for search_type, search_value in SEARCHES:
-
-      if hash_val is None:
-        continue
-
-      tasks.append(loop.create_task(
-          search_files(
-              args.apikey, args.numfiles, hash_type, hash_val,
-              search_type, search_value
-          )
-      ))
-
+    tasks.extend(
+        loop.create_task(
+            search_files(
+                args.apikey,
+                args.numfiles,
+                hash_type,
+                hash_val,
+                search_type,
+                search_value,
+            )) for search_type, search_value in SEARCHES
+        if hash_val is not None)
   urls = await asyncio.gather(*tasks)
-  urls = set().union(*urls)
-  if urls:
+  if urls := set().union(*urls):
     print('\nRelated URLs:\n{}'.format('\n\t'.join(urls)))
 
 

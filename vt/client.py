@@ -96,21 +96,19 @@ class ClientResponse:
     return make_sync(self.read_async())
 
   async def json_async(self):
-    if self.headers.get('Transfer-encoding') == 'chunked':
-      response_content = await self._get_chunked_response()
-      return json.loads(response_content)
-    else:
+    if self.headers.get('Transfer-encoding') != 'chunked':
       return await self._aiohttp_resp.json()
+    response_content = await self._get_chunked_response()
+    return json.loads(response_content)
 
   def json(self):
     return make_sync(self.json_async())
 
   async def text_async(self):
-    if self.headers.get('Transfer-encoding') == 'chunked':
-      response_content = await self._get_chunked_response()
-      return response_content.decode(self._aiohttp_resp.get_encoding())
-    else:
+    if self.headers.get('Transfer-encoding') != 'chunked':
       return await self._aiohttp_resp.text()
+    response_content = await self._get_chunked_response()
+    return response_content.decode(self._aiohttp_resp.get_encoding())
 
   def text(self):
     return make_sync(self.text_async())
@@ -243,7 +241,7 @@ class Client:
     self.close()
 
   def _extract_data_from_json(self, json_response):
-    if not 'data' in json_response:
+    if 'data' not in json_response:
       raise ValueError('response does not returns a data field')
     return json_response['data']
 
@@ -401,8 +399,7 @@ class Client:
     if response.status >= 400 and response.status <= 499:
       if response.content_type == 'application/json':
         json_response = await response.json_async()
-        error = json_response.get('error')
-        if error:
+        if error := json_response.get('error'):
           return APIError.from_dict(error)
       return APIError('ClientError', await response.text_async())
     return APIError('ServerError', await response.text_async())

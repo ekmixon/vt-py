@@ -87,11 +87,10 @@ def main():
   queue = asyncio.Queue(loop=loop)
   loop.create_task(get_rules_files(queue, args.path))
 
-  _worker_tasks = []
-  for i in range(args.workers):
-    _worker_tasks.append(
-        loop.create_task(upload_rules(queue, args.apikey, args.enable)))
-
+  _worker_tasks = [
+      loop.create_task(upload_rules(queue, args.apikey, args.enable))
+      for _ in range(args.workers)
+  ]
   # Wait until all worker tasks has completed.
   loop.run_until_complete(asyncio.gather(*_worker_tasks))
   loop.close()

@@ -58,8 +58,7 @@ class HuntingNotificationToNetworkInfrastructureHandler:
         raise ValueError('Value to filtering with must be a string')
 
       filter_tag = search_filter.lower()
-      url = '/intelligence/hunting_notification_files?filter={}'.format(
-          filter_tag)
+      url = f'/intelligence/hunting_notification_files?filter={filter_tag}'
       files = client.iterator(url, limit=max_files)
       async for f in files:
         if f.context_attributes['hunting_notification_date'] > date_filter:
@@ -157,9 +156,9 @@ class HuntingNotificationToNetworkInfrastructureHandler:
             print(f'\t{network_inf[0]}')
             for address in network_inf[1]:
               if address['type'] in ('domain', 'ip_address'):
-                print('\t\t{}'.format(address['id']))
+                print(f"\t\t{address['id']}")
               else:
-                print('\t\t{}'.format(address['context_attributes']['url']))
+                print(f"\t\t{address['context_attributes']['url']}")
 
 
 async def main():

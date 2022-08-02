@@ -59,11 +59,10 @@ def main():
   queue = asyncio.Queue(loop=loop)
   loop.create_task(get_files_to_upload(queue, args.path))
 
-  _worker_tasks = []
-  for i in range(args.workers):
-    _worker_tasks.append(
-        loop.create_task(upload_hashes(queue, args.apikey)))
-
+  _worker_tasks = [
+      loop.create_task(upload_hashes(queue, args.apikey))
+      for _ in range(args.workers)
+  ]
   # Wait until all worker tasks has completed.
   loop.run_until_complete(asyncio.gather(*_worker_tasks))
   loop.close()

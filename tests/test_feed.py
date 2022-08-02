@@ -20,8 +20,8 @@ from vt import APIError, Client, FeedType
 
 
 def new_client(httpserver):
-  return Client('dummy_api_key',
-                host='http://' + httpserver.host + ':' + str(httpserver.port))
+  return Client(
+      'dummy_api_key', host=f'http://{httpserver.host}:{str(httpserver.port)}')
 
 
 @pytest.fixture

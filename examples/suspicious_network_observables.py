@@ -61,11 +61,10 @@ async def get_netloc_relationship(apikey, netloc, rel_type):
   path = 'ip_addresses' if is_ip_address(netloc) else 'domains'
   async with vt.Client(apikey) as client:
     it = client.iterator(f'/{path}/{netloc}/{rel_type}', limit=20)
-    stats = [
+    if stats := [
         get_detection_rate(f.last_analysis_stats) async for f in it
-        if f.last_analysis_stats['malicious']]
-
-    if stats:
+        if f.last_analysis_stats['malicious']
+    ]:
       text = rel_type.replace("_", " ")[:-1 if len(stats) <= 1 else None]
       return max(stats), len(stats), text
     else:
@@ -79,12 +78,14 @@ async def get_netloc_report_relationships(loop, apikey, netloc):
 
   tasks = []
   async with vt.Client(apikey) as client:
-    for rel_type in [
-        'urls', 'downloaded_files', 'communicating_files', 'referrer_files']:
-
-      tasks.append(loop.create_task(
-          get_netloc_relationship(apikey, netloc, rel_type)))
-
+    tasks.extend(
+        loop.create_task(get_netloc_relationship(apikey, netloc, rel_type))
+        for rel_type in [
+            'urls',
+            'downloaded_files',
+            'communicating_files',
+            'referrer_files',
+        ])
   results = await asyncio.gather(*tasks, return_exceptions=True)
   print_results(results, netloc)
 
@@ -101,11 +102,11 @@ def main():
   args = parser.parse_args()
 
   loop = asyncio.get_event_loop()
-  tasks = []
-  for n in args.path:
-    tasks.append(loop.create_task(
-        get_netloc_report_relationships(loop, args.apikey, n.strip())))
-
+  tasks = [
+      loop.create_task(
+          get_netloc_report_relationships(loop, args.apikey, n.strip()))
+      for n in args.path
+  ]
   # Wait until all tasks are completed.
   loop.run_until_complete(asyncio.gather(*tasks))
   loop.close()
